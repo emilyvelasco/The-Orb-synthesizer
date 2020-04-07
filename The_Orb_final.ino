@@ -1,6 +1,5 @@
-/*  Example of a simple light-sensawg theremin-like
-    instrument with long echoes,
-    usawg Mozzi sonification library.
+/*  An echoey, warbly instrument using an analog gyroscope with the
+Mozzi sonification library.
   
     Demonstrates ControlDelay() for echoing control values,
     and smoothing an analog input from a sensor
@@ -12,9 +11,7 @@
       DAC/A14 on Teensy 3.0/3.1, or 
        check the README or http://sensorium.github.com/Mozzi/
   
-    Light dependent resistor (LDR) and 5.1k resistor on analog pin 1:
-       LDR from analog pin to +5V (3.3V on Teensy 3.0/3.1)
-       5.1k resistor from analog pin to ground
+    X, Y and Z outputs from the gyroscope connect to analog pins 0, 1, and 2.
     
     Mozzi help/discussion/announcements:
     https://groups.google.com/forum/#!forum/mozzi-users
@@ -25,8 +22,7 @@
 //#include <ADC.h>  // Teensy 3.0/3.1 uncomment this line and install http://github.com/pedvide/ADC
 #include <MozziGuts.h>
 #include <Oscil.h> // oscillator template
-#include <tables/sin8192_int8.h> // sawe table for oscillator
-#include <tables/triangle_warm8192_int8.h> // recorded audio wavetable
+#include <tables/triangle_warm8192_int8.h> // triangle wave recorded audio wavetable
 
 #include <RollingAverage.h>
 #include <ControlDelay.h>
@@ -50,7 +46,8 @@ Oscil <SIN8192_NUM_CELLS, AUDIO_RATE> aTri2(SIN8192_DATA);
 Oscil <SIN8192_NUM_CELLS, AUDIO_RATE> aTri3(SIN8192_DATA);
 
 // use: RollingAverage <number_type, how_many_to_average> myThing
-RollingAverage <int, 8> kAverage; // how_many_to_average has to be power of 2
+RollingAverage <int, 8> kAverage; // how_many_to_average has to be power of 2. The greater the number, 
+//the more readings it averages
 int averagedX;
 int averagedY;
 int averagedZ;
@@ -83,12 +80,12 @@ void updateControl(){
   Serial.print("Z = ");
   Serial.print((bumpy_inputZ-270)*3);
   Serial.print("\t"); // prints a tab
-  mappedX = map(bumpy_inputX, 260, 450, 0, 1023);
+  mappedX = map(bumpy_inputX, 260, 450, 0, 1023); //maps the gyroscope analog output range to a standard range
   mappedY = map(bumpy_inputY, 260, 450, 0, 1023);
   mappedZ = map(bumpy_inputZ, 260, 450, 0, 1023);
 
   
-  averagedX = kAverage.next(mappedX*1.5);
+  averagedX = kAverage.next(mappedX*1.5); //trial and error how much to multiple each axis by for best sound
   averagedY = kAverage.next(mappedY);
   averagedZ = kAverage.next(mappedZ*.75);
   Serial. println();  
@@ -101,7 +98,7 @@ void updateControl(){
 
 
 int updateAudio(){
-  return 4*((int)aTri0.next()+aTri1.next()+(aTri2.next()>>1)
+  return 4*((int)aTri0.next()+aTri1.next()+(aTri2.next()>>1) //this right here controls the volume and does the echoing
     +(aTri3.next()>>2)) >>3;
 }
 
