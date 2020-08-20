@@ -23,6 +23,7 @@ Mozzi sonification library.
 #include <MozziGuts.h>
 #include <Oscil.h> // oscillator template
 #include <tables/triangle_warm8192_int8.h> // triangle wave recorded audio wavetable
+#include <tables/sin2048_int8.h>
 
 #include <RollingAverage.h>
 #include <ControlDelay.h>
